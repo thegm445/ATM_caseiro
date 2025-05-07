@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: atm_postgres_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Os bancos serão criados pelos próprios serviços Django na primeira migração
+      # ou você pode adicionar POSTGRES_DB aqui se quiser um banco padrão inicial
+    ports:
+      - "5432:5432" # Exponha apenas se precisar acessar o DB de fora do Docker
+    networks:
+      - atm_network
+
+  auth_service:
+    container_name: atm_auth_service
+    build:
+      context: ./services/service_auth # Caminho para o Dockerfile do serviço de autenticação
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./services/service_auth:/usr/src/app # Monta o código para live reload
+    ports:
+      - "8000:8000"
+    environment:
+      # PostgreSQL
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${POSTGRES_DB_AUTH}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      # Django
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY_AUTH}
+      DJANGO_DEBUG: ${DJANGO_DEBUG_AUTH}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS_AUTH}
+      # Python
+      PYTHONUNBUFFERED: 1 # Para logs do Python aparecerem imediatamente
+      PYTHONDONTWRITEBYTECODE: 1
+    depends_on:
+      - db
+    networks:
+      - atm_network
+
+  account_service:
+    container_name: atm_account_service
+    build:
+      context: ./services/service_account # Caminho para o Dockerfile do serviço de contas
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8001
+    volumes:
+      - ./services/service_account:/usr/src/app # Monta o código para live reload
+    ports:
+      - "8001:8001" # Usando uma porta diferente para não conflitar com o auth_service
+    environment:
+      # PostgreSQL
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${POSTGRES_DB_ACCOUNT}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      # Django
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY_ACCOUNT}
+      DJANGO_DEBUG: ${DJANGO_DEBUG_ACCOUNT}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS_ACCOUNT}
+      # Python
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+    depends_on:
+      - db
+    networks:
+      - atm_network
+
+volumes:
+  postgres_data:
+
+networks:
+  atm_network:
+    driver: bridge

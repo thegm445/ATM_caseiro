@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "atm-caseiro"
+version = "0.1.0"
+description = "Refatoracao do ATM Caseiro com microservicos"
+authors = ["thegm445 <gabrielmourajulho2005@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+isort = "^6.0.1"
+flake8 = "^7.2.0"
+mypy = "^1.15.0"
+pre-commit = "^4.2.0"
+commitizen = "^4.6.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

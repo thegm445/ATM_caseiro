@@ -1,0 +1,6 @@
+# services/service_account/requirements.txt
+django>=4.2,<5.0 # Ou a versão que você escolheu e usou no service_auth
+psycopg2-binary>=2.9,<3.0
+djangorestframework>=3.14,<4.0 # Se for usar Django REST framework para expor APIs
+# ... outras dependências específicas para o serviço de contas, se houver
+# Por exemplo, se for usar alguma biblioteca para cálculos financeiros específicos, etc.
